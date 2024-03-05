@@ -1,6 +1,6 @@
 # SimpleWebMail
 
-A Simple WebMail service based on HMailServer.
+A Simple WebMail service based on HMailServer. This was a college project due to this the service is written in my native language.
 
 **WARNING:** THIS PROJECT HAS NOT BEEN TESTED FOR SECURITY VULNERABILITIES! PLEASE DO NOT USE IT IN PRODUCTION ENVIRONMENTS! I BEAR NO RESPONSIBILITY IF YOUR DATA IS STOLEN OR YOUR SERVER IS HACKED! ALSO, HMAILSERVER IS DISCONTINUED!
 
