@@ -24,7 +24,7 @@ A Simple WebMail service based on HMailServer.
 
 ## Usage
 
-1. Import the SQL DB File to your Database.
+1. Import the SQL DB File (Its in the Database folder in this repo) to your Database.
 2. Install HMailServer and connect it to the Database.
 3. Put the HTML and PHP components on the WebServer.
 4. Enjoy!
