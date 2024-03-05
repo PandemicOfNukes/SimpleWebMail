@@ -10,6 +10,7 @@ A Simple WebMail service based on HMailServer.
 - Inbox: Users can view received emails and manage them (delete emails, reply, or forward them).
 - Compose Emails: Users can send emails.
 - Agenda: Users can mark important dates.
+- WebAdmin: Admins can elevate users permissions, change their passwords, delete accounts and create new ones.
 
 ## Limitations
 
