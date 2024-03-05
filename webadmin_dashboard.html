@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>DREAMS Corporation Email Service - Web Admin Dashboard</title>
+    <link rel="icon" href="Imagens/logo.ico" type="image/x-icon">
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .account-list {
+            flex: 0 0 30%;
+        }
+
+        .account-details {
+            flex: 0 0 70%;
+            display: none;
+        }
+
+        .account-details.active {
+            display: block;
+        }
+
+        .list-group-item.active {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            width: 100%;
+        }
+
+        .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .change-permission,
+        .change-password,
+        .delete-account {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body class="d-flex flex-column">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="webadmin_dashboard.html">
+                <img src="Imagens/logo.png" alt="Logo" width="30" height="30" class="d-inline-block align-top">
+                DREAMS Corporation Email Service - Web Admin Dashboard
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="webadmin_dashboard.html">WebAdmin DashBoard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="inbox_webadmin.html">Inbox</a>
+                    </li>
+					<li class="nav-item">
+                        <a class="nav-link" href="agenda_webadmin.html">Agenda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="php\Logout.php">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Web Admin Dashboard</h2>
+        <main class="d-flex">
+            <div class="row">
+            </div>
+            <div class="account-list">
+                <div class="list-group" id="accountList">
+                </div>
+            </div>
+
+            <div class="account-details-container" id="accountDetailsContainer">
+            </div>
+
+            <div class="col">
+                <table class="table">
+				                <button class="btn btn-success mt-3" id="createAccountBtn" style="width: 700px;">Criar Conta</button>
+
+                    <thead>
+                        <tr>
+                            <th>Email Address</th>
+                            <th>Nivel De Permissão</th>
+                        </tr>
+                    </thead>
+                    <tbody id="accountsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script src="jquery-3.7.1.min.js"></script>
+    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let accounts = [];
+        let selectedAccountId = "";
+
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('php/fetch_accounts.php')
+                .then(response => response.json())
+                .then(data => {
+                    accounts = data.accounts || [];
+                    const accountList = document.getElementById('accountList');
+                    const accountDetailsContainer = document.getElementById('accountDetailsContainer');
+                    const accountsTableBody = document.getElementById('accountsTableBody');
+
+                    accounts.forEach(account => {
+                        const listItem = document.createElement('a');
+                        listItem.href = '#';
+                        listItem.classList.add('list-group-item');
+                        listItem.setAttribute('data-account-id', 'accountDetails' + account.id);
+                        listItem.innerText = account.address;
+
+                        const changePermissionButton = document.createElement('button');
+                        changePermissionButton.classList.add('btn', 'btn-primary', 'change-permission');
+                        changePermissionButton.innerText = 'Mudar Permissão';
+                        changePermissionButton.onclick = function () {
+                            changePermission(account.id, account.address);
+                        };
+
+                        const changePasswordButton = document.createElement('button');
+                        changePasswordButton.classList.add('btn', 'btn-success', 'change-password');
+                        changePasswordButton.innerText = 'Mudar Password';
+                        changePasswordButton.onclick = function () {
+                            changePassword(account.id, account.address);
+                        };
+
+                        const deleteAccountButton = document.createElement('button');
+                        deleteAccountButton.classList.add('btn', 'btn-danger', 'delete-account');
+                        deleteAccountButton.innerText = 'Deletar Conta';
+                        deleteAccountButton.onclick = function () {
+                            deleteAccount(account.id, account.address);
+                        };
+						
+						document.getElementById('createAccountBtn').addEventListener('click', function () {
+							window.location.href = 'criar_conta_webadmin.html';
+						});
+
+
+                        listItem.appendChild(changePermissionButton);
+                        listItem.appendChild(changePasswordButton);
+                        listItem.appendChild(deleteAccountButton);
+
+                        accountList.appendChild(listItem);
+
+                        const accountDetailsDiv = document.createElement('div');
+                        accountDetailsDiv.classList.add('account-details', 'account-item');
+                        accountDetailsDiv.id = 'accountDetails' + account.id;
+
+                        accountDetailsContainer.appendChild(accountDetailsDiv);
+
+                        const tableRow = document.createElement('tr');
+                        tableRow.innerHTML = `<td>${account.address}</td><td id="permissionLevel_${account.id}">${account.adminLevel}</td>`;
+                        accountsTableBody.appendChild(tableRow);
+                    });
+                });
+
+            document.querySelector('.list-group').addEventListener('click', function (e) {
+                e.preventDefault();
+
+                if (e.target.classList.contains('list-group-item')) {
+                    document.querySelectorAll('.list-group-item').forEach(function (item) {
+                        item.classList.remove('active');
+                    });
+                    e.target.classList.add('active');
+                    document.querySelectorAll('.account-details').forEach(function (details) {
+                        details.classList.remove('active');
+                    });
+                    var accountId = e.target.getAttribute('data-account-id');
+                    document.getElementById(accountId).classList.add('active');
+
+                    selectedAccountId = accountId.split('accountDetails')[1];
+                }
+            });
+        });
+
+        function showPermissionLevel(accountId, adminLevel) {
+            const accountDetailsDiv = document.getElementById('accountDetails' + accountId);
+            accountDetailsDiv.innerHTML = `
+                <h4>Account Details</h4>
+                <p>Email Address: ${accounts.find(acc => acc.id === parseInt(accountId)).address}</p>
+                <p>Permission Level: <span id="permissionLevel_${accountId}">${adminLevel}</span></p>
+            `;
+
+            document.getElementById(`permissionLevel_${accountId}`).innerText = adminLevel;
+        }
+		
+        function changePermission(accountId, emailAddress) {
+            const newPermission = prompt('Insira uma nova permissão (0 para Utilizador Normal(Sem permissões), 1 para Administrador de Dominio, 2 para Administrador do Servidor(Só pode ser atribuido por aqueles que têm permissões de nível 2):');
+            if (newPermission !== null && !isNaN(newPermission) && newPermission >= 0 && newPermission <= 2) {
+                const confirmation = confirm(`Tem a certeza que quer mudar ${emailAddress} para a permissão ${newPermission}?`);
+                if (confirmation) {
+                    fetch('php/make_permissions.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `email=${encodeURIComponent(emailAddress)}&newPermission=${encodeURIComponent(newPermission)}`,
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const account = accounts.find(acc => acc.id === parseInt(accountId));
+                                if (account) {
+                                    account.adminLevel = newPermission;
+                                    showPermissionLevel(accountId, newPermission);
+                                    updateTable(accountId, newPermission);
+                                    alert('Permissão Mudada com Sucesso.');
+                                } else {
+                                    console.error('Account not found for ID:', accountId);
+                                }
+                            } else {
+                                console.error('Error changing permission:', data.error);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        })
+                        .finally(function () {
+                            location.reload();
+                        });
+                } else {
+                    alert('Permissão cancelada pelo o utilizador.');
+                }
+            } else {
+                alert('Permissão Invalida ou Cancelada.');
+            }
+        }
+
+        function updateTable(accountId, newPermission) {
+            document.getElementById(`permissionLevel_${accountId}`).innerText = newPermission;
+        }
+
+        function changePassword(accountId, emailAddress) {
+            const newPassword = prompt('Insira uma nova password:');
+            console.log('New Password:', newPassword);
+            if (newPassword !== null) {
+                const confirmation = confirm(`Tem a certeza que quer mudar a password para a nova password inserida?`);
+                if (confirmation) {
+                    fetch('php/mudar_password.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `email=${encodeURIComponent(emailAddress)}&newPassword=${encodeURIComponent(newPassword)}`,
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('password alterada com sucesso.');
+                            } else {
+                                console.error('Error changing password:', data.error);
+                                alert('Ocorreu um erro ao alterar a password.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Ocorreu um erro ao alterar a password.');
+                        })
+                        .finally(function () {
+                            location.reload();
+                        });
+                } else {
+                    alert('Alteração de password cancelada pelo o utilizador.');
+                }
+            } else {
+                alert('password inválida ou cancelada.');
+            }
+        }
+
+	function deleteAccount(accountId, emailAddress) {
+		const confirmation = confirm(`Tem certeza que deseja deletar a conta ${emailAddress}?`);
+
+		if (confirmation) {
+			fetch('php/deletar_conta.php', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+				},
+				body: `email=${encodeURIComponent(emailAddress)}`,
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					alert('Conta deletada com sucesso.');
+					location.reload();
+				} else {
+					console.error('Error deleting account:', data.error);
+					alert('Ocorreu um erro ao deletar a conta.');
+				}
+			})
+			.catch(error => {
+				console.error('Error:', error);
+				alert('Ocorreu um erro ao deletar a conta.');
+			});
+		} else {
+			alert('A exclusão da conta foi cancelada pelo o utilizador.');
+		}
+	}
+    </script>
+
+</body>
+
+</html>

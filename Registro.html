@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Email Service - Registro</title>
+  <link rel="icon" href="Imagens/logo.ico" type="image/x-icon">
+  <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <img src="Imagens/logo.png" alt="Logo" width="30" height="30" class="d-inline-block align-top">
+        DREAMS Corporation Email Service
+      </a>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Bem-Vindo</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="Registro.html">Registro</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="Login.html">Login</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h1 class="text-center mb-4">Registro</h1>
+            
+            <form id="registrationForm" method="post" onsubmit="return validateAndSubmit()">
+              <div class="mb-3">
+                <label for="nome" class="form-label">Nome Completo</label>
+                <input type="text" class="form-control" id="nome" name="nome" required>
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+              </div>
+              <div class="mb-3">
+                <label for="confirmarpassword" class="form-label">Confirmar Password</label>
+                <input type="password" class="form-control" id="confirmarpassword" name="confirmarpassword" required>
+              </div>
+              <div class="text-center">
+                <button type="submit" class="btn btn-primary btn-lg">Registrar</button>
+              </div>
+            </form>
+
+	    <div class="mt-3" id="emailRegistradoContainer" style="display: none;">
+  		<p>Email registrado: <span id="emailRegistrado"></span></p>
+	    </div>
+
+            <div class="text-center mt-3">
+              <p>Já possui uma conta? <a href="Login.html">Faça Login</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mt-5">
+    <p class="text-center text-danger">
+      <strong><em><u>Atenção:</u></em></strong> Este servidor e domínio são considerados de prioridade <strong><em><u>ECHELON</u></em></strong>. Toda a informação é considerada <strong><em><u>CLASSIFICADA</u></em></strong> e só para <strong><em><u>OLHOS AUTORIZADOS</u></em></strong>. TODAS AS AÇÕES ESTÃO A SER GUARDADAS PARA INSPEÇÕES PERIÓDICAS REGULARES. Qualquer acesso não autorizado será <strong><em><u>PUNIDO</u></em></strong>.
+    </p>
+  </div>
+
+  <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="jquery-3.7.1.min.js"></script>
+  <script>
+    function validateAndSubmit(event) {
+
+    var nome = document.getElementById('nome').value;
+    var password = document.getElementById('password').value;
+    var confirmarPassword = document.getElementById('confirmarpassword').value;
+
+    if (password !== confirmarPassword) {
+        alert('As passwords não coincidem. Por favor, digite novamente.');
+        return false;
+    }
+
+    var caracteresIndesejados = ['?', '*', '|', '\\', '/', '<', '>'];
+    var email = `${nome.toLowerCase().replace(/\s+/g, '.')}@dreamscorporation.com`;
+
+    for (var i = 0; i < caracteresIndesejados.length; i++) {
+        if (email.includes(caracteresIndesejados[i])) {
+            alert('O endereço de e-mail não pode conter caracteres especiais como ? * | \\ / < >');
+            return false;
+        }
+    }
+
+    $.ajax({
+        type: 'POST',
+        url: 'php/registrar.php',
+        data: {
+            password: password,
+            email: email
+        },
+        success: function (response) {
+            if (response.includes('Erro:')) {
+                console.error(response);
+                alert(response);
+            } else {
+                console.log(response);
+                alert(response);
+                
+                console.log('Antes de exibir o email');
+	   	$('#emailRegistrado').text(email);
+		console.log('Depois de exibir o email');
+
+		$('#registrationForm').hide();
+
+		$('#emailRegistradoContainer').show();
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error('Erro na requisição AJAX:', textStatus, errorThrown);
+            alert('Erro ao enviar dados para o servidor. Por favor, tente novamente mais tarde.');
+        }
+    });
+
+    return false;
+}
+
+  </script>
+</body>
+</html>

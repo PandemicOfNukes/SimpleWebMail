@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>DREAMS Corporation Agenda</title>
+    <link rel="icon" href="Imagens/logo.ico" type="image/x-icon">
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            width: 100%;
+        }
+
+        .calendar {
+            margin: 20px auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        td {
+            cursor: pointer;
+        }
+
+        .arrow-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .arrow-img {
+            width: 30px;
+            height: auto;
+            margin: 0 5px;
+        }
+		
+		.event-day {
+			background-color: #ffcc00; 
+			color: #000;
+		}
+    </style>
+</head>
+
+<body class="d-flex flex-column">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="agenda.html">
+                <img src="Imagens/logo.png" alt="Logo" width="30" height="30" class="d-inline-block align-top">
+                DREAMS Corporation Agenda
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="webadmin_dashboard.html">WebAdmin DashBoard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="inbox_webadmin.html">Inbox</a>
+                    </li>
+					<li class="nav-item">
+                        <a class="nav-link" href="agenda_webadmin.html">Agenda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="php\Logout.php">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Agenda</h2>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal" data-bs-dismiss="modal">Adicionar Evento</button>
+        <main class="d-flex">
+            <div class="calendar">
+                <button id="prev-month" class="arrow-button"><img src="Imagens/reverse.png" class="arrow-img" /></button><button id="next-month" class="arrow-button"><img src="Imagens/forward.png" class="arrow-img" /></button>
+                <h3 id="month-year"></h3>
+                <table id="calendar">
+                    <thead>
+                        <tr>
+                            <th>D</th>
+                            <th>S</th>
+                            <th>T</th>
+                            <th>Q</th>
+                            <th>Q</th>
+                            <th>S</th>
+                            <th>S</th>
+                        </tr>
+                    </thead>
+                    <tbody id="calendar-body">
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal fade" id="eventsModal" tabindex="-1" aria-labelledby="eventsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="eventsModalLabel"><span id="modalDate"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Titulo</th>
+                                <th>Descrição</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalEventTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEventModalLabel">Adicionar Evento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addEditEventForm">
+                        <div class="mb-3">
+                            <label for="modalEventTitle" class="form-label">Titulo</label>
+                            <input type="text" class="form-control" id="modalEventTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modalEventDate" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="modalEventDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modalEventDescription" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="modalEventDescription"></textarea>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="saveEvent()">Salvar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+	<div id="alertContainer"></div>
+	
+	<div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editEventModalLabel">Editar Evento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editEventForm">
+                    <div class="mb-3">
+                        <label for="editEventTitle" class="form-label">Titulo</label>
+                        <input type="text" class="form-control" id="editEventTitle" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editEventDate" class="form-label">Data</label>
+                        <input type="date" class="form-control" id="editEventDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editEventDescription" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="editEventDescription"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="saveEditedEvent()">Salvar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+	
+	<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirmar Eliminação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Tem a certeza que quer eliminar este evento?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteButton" onclick="confirmDeleteEvent()">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="jquery-3.7.1.min.js"></script>
+    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+	const addEventModal = new bootstrap.Modal(document.getElementById('addEventModal'));
+	
+	function editEvent(eventId, title, description, date) {
+        document.getElementById('editEventTitle').value = title;
+        document.getElementById('editEventDate').value = date;
+        document.getElementById('editEventDescription').value = description;
+
+        $('#editEventModal').data('eventId', eventId);
+
+        $('#editEventModal').modal('show');
+    }
+
+    function saveEditedEvent() {
+        const title = document.getElementById('editEventTitle').value;
+        const date = document.getElementById('editEventDate').value;
+        const description = document.getElementById('editEventDescription').value;
+        const eventId = $('#editEventModal').data('eventId');
+
+        $.ajax({
+            type: 'POST',
+            url: 'php/add_edit_delete_eventos.php',
+            data: {
+                action: 'edit_event',
+                year: new Date(date).getFullYear(),
+                month: new Date(date).getMonth() + 1,
+                day: new Date(date).getDate(),
+                title: title,
+                description: description,
+                eventId: eventId
+            },
+            dataType: 'json',
+            success: function (response) {
+                if (response.success) {
+                    const year = new Date(date).getFullYear();
+                    const month = new Date(date).getMonth() + 1;
+                    const day = new Date(date).getDate();
+                    showEventsForDate(year, month, day);
+
+                    showSuccessAlert('Evento editado com sucesso!');
+					location.reload();
+                } else {
+
+                    showErrorAlert('Erro.');
+                }
+                $('#editEventModal').modal('hide');
+            },
+            error: function (error) {
+                showErrorAlert('Erro.');
+            }
+        });
+    }
+	function saveEvent() {
+		const title = document.getElementById('modalEventTitle').value;
+		const date = document.getElementById('modalEventDate').value;
+		const description = document.getElementById('modalEventDescription').value;
+		const eventId = $('#addEventModal').data('eventId');
+
+		let action = 'add_event';
+
+		$.ajax({
+			type: 'POST',
+			url: 'php/add_edit_delete_eventos.php',
+			data: {
+				action: action,
+				year: new Date(date).getFullYear(),
+				month: new Date(date).getMonth() + 1,
+				day: new Date(date).getDate(),
+				title: title,
+				description: description,
+				eventId: eventId
+			},
+			dataType: 'json',
+			success: function (response) {
+				if (response.success) {
+					const year = new Date(date).getFullYear();
+					const month = new Date(date).getMonth() + 1;
+					const day = new Date(date).getDate();
+					showEventsForDate(year, month, day);
+
+					showSuccessAlert('Evento salvado com sucesso!');
+					location.reload();
+				} else {
+					showErrorAlert('Erro.');
+				}
+				addEventModal.hide();
+			},
+			error: function (error) {
+				showErrorAlert('Erro.');
+			}
+		});
+	}
+
+	function showSuccessAlert(message) {
+		const alertContainer = document.getElementById('alertContainer');
+		alertContainer.innerHTML = `<div class="alert alert-success alert-dismissible fade show" role="alert">
+										${message}
+										<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+									</div>`;
+	}
+
+	function showErrorAlert(message) {
+		const alertContainer = document.getElementById('alertContainer');
+		alertContainer.innerHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+										${message}
+										<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+									</div>`;
+	}
+
+	function deleteEvent(eventId) {
+        const confirmationModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+
+        confirmationModal.show();
+
+        $('#confirmDeleteButton').data('eventId', eventId);
+    }
+
+    function confirmDeleteEvent() {
+        const eventId = $('#confirmDeleteButton').data('eventId');
+
+        $('#deleteConfirmationModal').modal('hide');
+
+        $.ajax({
+            type: 'POST',
+            url: 'php/add_edit_delete_eventos.php',
+            data: {
+                action: 'delete_event',
+                event_id: eventId
+            },
+            dataType: 'json',
+            success: function (response) {
+                if (response.success) {
+                    removeEventFromUI(eventId);
+					location.reload();
+                } else {
+                    console.error('Error deleting event:', response);
+                }
+            },
+            error: function (error) {
+                console.error('Error deleting event:', error);
+            }
+        });
+    }
+
+	function removeEventFromUI(eventId) {
+		const eventRow = $(`tr[data-event-id="${eventId}"]`);
+		
+		if (eventRow.length > 0) {
+			eventRow.remove();
+		} else {
+			console.warn(`Event with ID ${eventId} not found in the UI.`);
+		}
+	}
+
+	function showEventsForDate(year, month, day) {
+        const modalEventTableBody = document.getElementById('modalEventTableBody');
+        modalEventTableBody.innerHTML = '';
+        fetchEvents(year, month, day);
+    }
+	
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarBody = document.getElementById('calendar-body');
+            const monthYearHeader = document.getElementById('month-year');
+            const prevMonthBtn = document.getElementById('prev-month');
+            const nextMonthBtn = document.getElementById('next-month');
+            const modalDate = document.getElementById('modalDate');
+            const eventsModal = new bootstrap.Modal(document.getElementById('eventsModal'));
+
+            let currentMonth;
+            let currentYear;
+
+            function renderCalendar(month, year) {
+				calendarBody.innerHTML = '';
+				const daysInMonth = new Date(year, month + 1, 0).getDate();
+				const startDay = new Date(year, month, 1).getDay();
+
+				monthYearHeader.textContent = `${getMonthName(month)} ${year}`;
+
+				for (let i = 0; i < 6; i++) {
+					const row = document.createElement('tr');
+
+					for (let j = 0; j < 7; j++) {
+						const cell = document.createElement('td');
+						const dayCounter = i * 7 + j + 1 - startDay;
+
+						if (dayCounter > 0 && dayCounter <= daysInMonth) {
+							cell.innerHTML = dayCounter;
+							cell.addEventListener('click', function () {
+								handleDateClick(year, month + 1, dayCounter);
+							});
+
+							const hasEvents = checkEvents(year, month + 1, dayCounter);
+							if (hasEvents) {
+								cell.classList.add('event-day');
+							}
+						}
+
+						row.appendChild(cell);
+					}
+
+					calendarBody.appendChild(row);
+				}
+			}
+			
+			function checkEvents(year, month, day) {
+				let hasEvents = false;
+
+				$.ajax({
+					type: 'POST',
+					url: 'php/check_agenda.php',
+					data: {
+						year: year,
+						month: month,
+						day: day
+					},
+					async: false,
+					success: function (response) {
+						hasEvents = response.hasEvents;
+					},
+					error: function (error) {
+						console.error('Erro:', error);
+					}
+				});
+
+				return hasEvents;
+			}
+
+            function getMonthName(month) {
+                const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outobro', 'Novembro', 'Decembro'];
+                return months[month];
+            }
+
+            function handleDateClick(year, month, day) {
+                modalDate.textContent = `Eventos para ${day} de ${getMonthName(month - 1)}, ${year}`;
+                showEventsForDate(year, month, day);
+                eventsModal.show();
+            }
+
+            function addEvent() {
+                clearAddEditEventForm();
+
+                addEventModal.show();
+            }
+
+            function deleteEvent(button) {
+                const row = button.parentNode.parentNode;
+                row.parentNode.removeChild(row);
+            }
+
+            function updateCalendar() {
+                renderCalendar(currentMonth, currentYear);
+            }
+
+            function goToPreviousMonth() {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                updateCalendar();
+            }
+
+            function goToNextMonth() {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                updateCalendar();
+            }
+
+            const currentDate = new Date();
+            currentMonth = currentDate.getMonth();
+            currentYear = currentDate.getFullYear();
+            renderCalendar(currentMonth, currentYear);
+
+            prevMonthBtn.addEventListener('click', goToPreviousMonth);
+            nextMonthBtn.addEventListener('click', goToNextMonth);
+        });
+
+	function fetchEvents(year, month, day) {
+		$.ajax({
+			type: 'POST',
+			url: 'php/fetch_agenda.php',
+			data: {
+				year: year,
+				month: month,
+				day: day
+			},
+			dataType: 'json',
+			success: function (response) {
+				console.log('Response from server:', response);
+				const modalEventTableBody = document.getElementById('modalEventTableBody');
+				modalEventTableBody.innerHTML = '';
+
+				response.events.forEach(event => {
+					const newRow = modalEventTableBody.insertRow();
+					newRow.setAttribute('data-event-id', event.event_id);
+
+					const cell1 = newRow.insertCell(0);
+					const cell2 = newRow.insertCell(1);
+					const cell3 = newRow.insertCell(2);
+					const cell4 = newRow.insertCell(3);
+
+					cell1.innerHTML = event.event_title;
+					cell2.innerHTML = event.event_description;
+					cell3.innerHTML = '';
+					cell4.innerHTML = `<button class="btn btn-warning" onclick="editEvent('${event.event_id}', '${event.event_title}', '${event.event_description}', '${event.event_date}')">Editar</button> <button class="btn btn-danger" onclick="deleteEvent(${event.event_id})">Eliminar</button>`;
+				});
+			},
+			error: function (error) {
+				console.error('Error fetching events:', error);
+			}
+		});
+	}
+    </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>DREAMS Corporation Email Service - Novo Email</title>
+    <link rel="icon" href="Imagens/logo.ico" type="image/x-icon">
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+			display: flex;
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		main {
+			flex: 1;
+			display: flex;
+			width: 100%;
+			align-items: stretch;
+		}
+
+        .container {
+            margin-top: 1px;
+        }
+
+        .btn-primary {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .attachment-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .attachment-list-item {
+            margin-top: 5px;
+        }
+
+        #dropArea {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            cursor: pointer;
+        }
+		
+		.file-input-container {
+			pointer-events: auto;
+		}
+
+        #dropArea.highlight {
+            border-color: #007bff;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column">
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="inbox_webadmin.html">
+                <img src="Imagens/logo.png" alt="Logo" width="30" height="30" class="d-inline-block align-top">
+                DREAMS Corporation Email Service
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+					<li class="nav-item">
+                        <a class="nav-link" href="webadmin_dashboard.html">WebAdmin DashBoard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="inbox_webadmin.html">Inbox</a>
+                    </li>
+					<li class="nav-item">
+                        <a class="nav-link" href="agenda_webadmin.html">Agenda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="php\Logout.php">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+<div class="container mt-4">
+    <h2>Novo Email</h2>
+    <main class="d-flex justify-content-center">
+        <div class="email-list">
+            <form id="emailForm" action="php/enviar_email_webadmin.php" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="to">Para (separado por vírgulas):</label>
+                    <input type="text" class="form-control" id="to" name="to" required>
+                </div>
+                <div class="form-group">
+                    <label for="subject">Assunto:</label>
+                    <input type="text" class="form-control" id="subject" name="subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="message">Mensagem:</label>
+                    <textarea class="form-control" id="message" name="message" rows="5"></textarea>
+                </div>
+				<div class="form-group">
+                    <label for="attachment">Anexo:</label>
+                    <input type="file" class="form-control-file" id="attachment" name="attachment[]" multiple>
+                </div>
+                <button type="submit" class="btn btn-primary">Enviar Email</button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<div class="container mt-5">
+    <p class="text-center text-danger">
+        <strong><em><u>Atenção:</u></em></strong> Este servidor e domínio são considerados de prioridade
+        <strong><em><u>ECHELON</u></em></strong>. Toda a informação é considerada
+        <strong><em><u>CLASSIFICADA</u></em></strong> e só para <strong><em><u>OLHOS AUTORIZADOS</u></em></strong>. TODAS AS AÇÕES ESTÃO
+        A SER GUARDADAS PARA INSPEÇÕES PERIÓDICAS REGULARES. Qualquer acesso não autorizado será
+        <strong><em><u>PUNIDO</u></em></strong>.
+    </p>
+</div>
+
+<script src="jquery-3.7.1.min.js"></script>
+<script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+<script>
+	const params = new URLSearchParams(window.location.search);
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('emailForm').addEventListener('submit', function (event) {
+            const toField = document.getElementById('to');
+            if (!isValidEmailList(toField.value)) {
+                event.preventDefault();
+                alert('Lista de endereços de e-mail inválida.');
+            }
+        });
+
+        function isValidEmailList(emailList) {
+            const emails = emailList.split(',');
+            for (const email of emails) {
+                if (!isValidEmail(email.trim())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function isValidEmail(email) {
+            return /^[^?*|\\/<>\s]+$/.test(email);
+        }
+		
+		if(params.has('subject') && params.has('message')) {
+			if(params.has('to')){
+				const to = params.get('to');
+				const subject = params.get('subject');
+				const message = params.get('message');
+				document.getElementById('to').value = to;
+				document.getElementById('subject').value = 'Re: ' + subject;
+				document.getElementById('message').value = message;
+			} else {
+				const subject = params.get('subject');
+				const message = params.get('message');
+				document.getElementById('subject').value = 'Ech: ' + subject;
+				document.getElementById('message').value = message;
+			}
+		}
+    });
+</script>
+</body>
+</html>

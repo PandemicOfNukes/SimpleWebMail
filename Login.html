@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>DREAMS Corporation Email Service - Login</title>
+  <link rel="icon" href="Imagens/logo.ico" type="image/x-icon">
+  <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <img src="Imagens/logo.png" alt="Logo" width="30" height="30" class="d-inline-block align-top">
+        DREAMS Corporation Email Service
+      </a>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Bem-Vindo</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="Registro.html">Registro</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="Login.html">Login</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h1 class="text-center mb-4">Login</h1>
+            
+            <form id="loginForm" method="post" onsubmit="return validateAndSubmit()">
+              <div class="mb-3">
+                <label for="email" class="form-label">Endereço de E-mail</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+              </div>
+              <div class="text-center">
+                <button type="submit" class="btn btn-primary btn-lg">Entrar</button>
+              </div>
+            </form>
+			
+			<div id="errorContainer" class="text-center mt-3 text-danger"></div>
+
+            <div class="text-center mt-3">
+              <p>Ainda não tem uma conta? <a href="Registro.html">Registre-se agora</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mt-5">
+    <p class="text-center text-danger">
+      <strong><em><u>Atenção:</u></em></strong> Este servidor e domínio são considerados de prioridade <strong><em><u>ECHELON</u></em></strong>. Toda a informação é considerada <strong><em><u>CLASSIFICADA</u></em></strong> e só para <strong><em><u>OLHOS AUTORIZADOS</u></em></strong>. TODAS AS AÇÕES ESTÃO A SER GUARDADAS PARA INSPEÇÕES PERIÓDICAS REGULARES. Qualquer acesso não autorizado será <strong><em><u>PUNIDO</u></em></strong>.
+    </p>
+  </div>
+
+  <script src="jquery-3.7.1.min.js"></script>
+  <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function validateAndSubmit() {
+      var email = document.getElementById('email').value;
+      var password = document.getElementById('password').value;
+
+      $.ajax({
+		type: 'POST',
+                url: 'php/login.php', 
+                data: {
+                    email: email,
+                    password: password
+                },
+                success: function (response) {
+                    if (response.includes('Erro:')) {
+						$('#errorContainer').html(response);
+                    } else {
+                        window.location.href = response; 
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('Erro na requisição AJAX:', textStatus, errorThrown);
+                    alert('Erro ao enviar dados para o servidor. Por favor, tente novamente mais tarde.');
+                }
+	  });
+      return false;
+    }
+  </script>
+</body>
+</html>

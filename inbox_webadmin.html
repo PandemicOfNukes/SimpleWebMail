@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>DREAMS Corporation Email Service - Inbox</title>
+    <link rel="icon" href="Imagens/logo.ico" type="image/x-icon">
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .email-list {
+            flex: 0 0 30%;
+        }
+
+        .email-content {
+            flex: 0 0 70%;
+            display: none;
+        }
+
+        .email-content.active {
+            display: block;
+        }
+
+        .list-group-item.active {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            width: 100%;
+        }
+
+        .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .delete-email {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body class="d-flex flex-column">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="inbox_webadmin.html">
+                <img src="Imagens/logo.png" alt="Logo" width="30" height="30" class="d-inline-block align-top">
+                DREAMS Corporation Email Service
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+					<li class="nav-item">
+                        <a class="nav-link" href="webadmin_dashboard.html">WebAdmin DashBoard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="inbox_webadmin.html">Inbox</a>
+                    </li>
+					<li class="nav-item">
+                        <a class="nav-link" href="agenda_webadmin.html">Agenda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="php\Logout.php">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Inbox</h2>
+        <button type="button" class="btn btn-primary" onclick="window.location.href='Enviar_webadmin.html';">Novo Email</button>
+        <main class="d-flex">
+            <div class="email-list">
+                <div class="list-group" id="emailList">
+                </div>
+            </div>
+
+            <div class="email-content-container" id="emailContentContainer">
+            </div>
+        </main>
+    </div>
+
+    <div class="container mt-5">
+        <p class="text-center text-danger">
+            <strong><em><u>Atenção:</u></em></strong> Este servidor e domínio são considerados de prioridade
+            <strong><em><u>ECHELON</u></em></strong>. Toda a informação é considerada
+            <strong><em><u>CLASSIFICADA</u></em></strong> e só para
+            <strong><em><u>OLHOS AUTORIZADOS</u></em></strong>. TODAS AS AÇÕES ESTÃO A SER GUARDADAS PARA INSPEÇÕES
+            PERIÓDICAS REGULARES. Qualquer acesso não autorizado será
+            <strong><em><u>PUNIDO</u></em></strong>.
+        </p>
+    </div>
+
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirmar Deleção?</h5>
+                </div>
+                <div class="modal-body">
+                    Tem a certeza que quer eliminar este email? Para cancelar a ação por favor clique fora desta mensagem.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Deletar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="jquery-3.7.1.min.js"></script>
+    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let emailSubject = "";
+        let emailContents = "";
+        let emailSender = "";
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('php/buscar_emails_inbox.php')
+                .then(response => response.json())
+                .then(data => {
+                    const emails = data.emails || [];
+                    const emailList = document.getElementById('emailList');
+                    const emailContentContainer = document.getElementById('emailContentContainer');
+
+                    emails.forEach(email => {
+                        const listItem = document.createElement('a');
+                        listItem.href = '#';
+                        listItem.classList.add('list-group-item');
+                        listItem.setAttribute('data-email-id', 'emailContent' + email.id);
+                        listItem.innerText = email.subject;
+
+                        const deleteButton = document.createElement('button');
+                        deleteButton.classList.add('btn', 'btn-danger', 'delete-email');
+                        deleteButton.innerText = 'Eliminar';
+                        deleteButton.onclick = function () {
+                            eliminarEmail(email.id);
+                        };
+
+                        listItem.appendChild(deleteButton);
+
+                        emailList.appendChild(listItem);
+
+                        const emailContentDiv = document.createElement('div');
+                        emailContentDiv.classList.add('email-content', 'email-item');
+                        emailContentDiv.id = 'emailContent' + email.id;
+
+                        emailContentDiv.innerHTML = `
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="email-actions">
+                                        <button type="button" class="btn btn-primary respond-email" onclick="responder()">Responder</button>
+                                        <button type="button" class="btn btn-success forward-email" onclick="encaminhar()">Encaminhar</button>
+                                    </div>
+                                    <div id="emailTitle"></div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="emailBody"></div>
+                                </div>
+                            </div>
+                        `;
+
+                        emailContentContainer.appendChild(emailContentDiv);
+                    });
+                });
+
+            $('#confirmDeleteBtn').click(function () {
+                $('#deleteConfirmationModal').modal('hide');
+            });
+
+            function eliminarEmail(emailId) {
+                $('#deleteConfirmationModal').modal('show');
+
+                $('#confirmDeleteBtn').off('click').on('click', function () {
+                    eliminarEmailPorId(emailId);
+                    $('#deleteConfirmationModal').modal('hide');
+                });
+            }
+
+            document.querySelector('.list-group').addEventListener('click', function (e) {
+                e.preventDefault();
+
+                if (e.target.classList.contains('list-group-item')) {
+                    document.querySelectorAll('.list-group-item').forEach(function (item) {
+                        item.classList.remove('active');
+                    });
+                    e.target.classList.add('active');
+                    document.querySelectorAll('.email-content').forEach(function (content) {
+                        content.classList.remove('active');
+                    });
+                    var emailContentId = e.target.getAttribute('data-email-id');
+                    document.getElementById(emailContentId).classList.add('active');
+
+                    fetch('php/buscar_email_inbox.php?emailid=' + emailContentId.split('emailContent')[1])
+                        .then(response => response.json())
+                        .then(emailContent => {
+                            const emailTitle = document.querySelector('#' + emailContentId + ' .card-header #emailTitle');
+                            const emailBody = document.querySelector('#' + emailContentId + ' .card-body #emailBody');
+                            const match = /<([^>]+)>/.exec(emailContent.fromaddress);
+                            const fullFromAddress = match ? emailContent.fromaddress : '';
+                            const emailAddress = match ? match[1] : emailContent.fromaddress;
+                            emailTitle.innerHTML = '<strong>De:</strong> ' + fullFromAddress + '[' + emailAddress + ']' + '<br>' +
+                                '<strong>Assunto:</strong> ' + emailContent.subject + '<br>' +
+                                '<strong>Enviado em:</strong> ' + emailContent.sentDate + '<br>';
+                            emailBody.innerHTML = emailContent.body + '<br>';
+                            emailSender = emailAddress;
+                            emailSubject = emailContent.subject;
+                            emailContents = 'Enviado Por: ' + fullFromAddress + '[' + emailAddress + ']' + '<br>' + 'Enviado Em: ' + emailContent.sentDate + '<br>' + 'Assunto: ' + emailSubject + '<br>' + emailContent.body + '<br>' + '----------------------------------------------' + '<br>';
+                        });
+                }
+            });
+        });
+
+        function responder() {
+            const Responder = "Enviar_webadmin.html" + "?to=" + encodeURIComponent(emailSender) + "&subject=" + encodeURIComponent(emailSubject) + "&message=" + encodeURIComponent(emailContents);
+            window.location.href = Responder;
+        }
+
+        function encaminhar() {
+            const Encaminhar = "Enviar_webadmin.html" + "?subject=" + encodeURIComponent(emailSubject) + "&message=" + encodeURIComponent(emailContents);
+            window.location.href = Encaminhar;
+        }
+
+        function eliminarEmailPorId(emailId, confirmDeletion) {
+            const confirmParam = confirmDeletion ? '&confirm=true' : '';
+
+            fetch(`php/Eliminar_Emails.php?emailid=${emailId}${confirmParam}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Erro a deletar o email.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Request error:', error);
+                    location.reload();
+                });
+        }
+    </script>
+</body>
+
+</html>
